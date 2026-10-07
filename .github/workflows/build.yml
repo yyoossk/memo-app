@@ -9,6 +9,28 @@ jobs:
     with:
       artifact-name: memo-app-debug
 
+  # main のビルドが成功したら、スマホから直接ダウンロードできるようリリースに APK を置く
+  release:
+    needs: apk
+    if: success() && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Publish latest APK
+        run: |
+          gh run download "${{ github.run_id }}" -n memo-app-debug -D apk
+          f=$(find apk -name "*.apk" | head -1)
+          cp "$f" memo-app.apk
+          gh release delete latest -y --cleanup-tag || true
+          gh release create latest memo-app.apk \
+            --target "${{ github.sha }}" \
+            --title "メモ帳 最新版" \
+            --notes "スマホでこのページを開き、memo-app.apk をタップしてインストールしてください。"
+
   # ビルドに失敗したときだけ、エラー内容を Actions の注釈に出す
   diagnose:
     needs: apk
