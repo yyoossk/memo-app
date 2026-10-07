@@ -8,3 +8,29 @@ jobs:
     uses: yyoossk/android-build-env/.github/workflows/android-build.yml@main
     with:
       artifact-name: memo-app-debug
+
+  # ビルドに失敗したときだけ、エラー内容を Actions の注釈に出す
+  diagnose:
+    needs: apk
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v4
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: "8.7"
+      - name: Build and report errors
+        run: |
+          set +e
+          gradle assembleDebug --console=plain > build.log 2>&1
+          code=$?
+          grep -E "error:|ERROR|e: |What went wrong|FAILED|Caused by|\.java:[0-9]+|AAPT" build.log | head -60 | while IFS= read -r line; do
+            echo "::error::${line//%/%25}"
+          done
+          tail -40 build.log | while IFS= read -r line; do echo "::notice::${line//%/%25}"; done
+          exit $code
