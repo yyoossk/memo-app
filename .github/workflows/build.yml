@@ -1,0 +1,10 @@
+name: Build APK
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  apk:
+    uses: yyoossk/android-build-env/.github/workflows/android-build.yml@main
+    with:
+      artifact-name: memo-app-debug
