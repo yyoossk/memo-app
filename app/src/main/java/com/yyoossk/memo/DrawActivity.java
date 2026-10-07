@@ -220,11 +220,11 @@ public class DrawActivity extends Activity {
         boolean titleChanged = !newTitle.equals(note.title);
         note.title = newTitle;
         if (draw.isBlank()) {
-            if (store.contains(note) && draw.isDirty()) store.remove(note);
+            if (store.contains(note) && draw.hasChanges()) store.remove(note);
             draw.markSaved();
             return;
         }
-        if (draw.isDirty()) {
+        if (draw.hasChanges()) {
             Bitmap b = draw.export();
             if (b != null) {
                 File f = store.drawingFile(note);

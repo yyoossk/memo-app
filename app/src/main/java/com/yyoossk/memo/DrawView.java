@@ -52,7 +52,7 @@ public class DrawView extends View {
         return strokes.isEmpty() && base == null;
     }
 
-    boolean isDirty() {
+    boolean hasChanges() {
         return dirty;
     }
 
